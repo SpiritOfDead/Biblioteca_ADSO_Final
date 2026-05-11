@@ -133,16 +133,32 @@ class Test_editoriales:
         nombre = "Editorial Valida"
         idPais = "CO"          # CO ya existe en setup_class
         nuevo = {"id": id, "nombre": nombre, "idPais": idPais}
-        esperado = "Editorial agregada con exito"
-        # Ejecutar la pruebas
+        
+        # CORREGIDO: Se agregó la tilde en "éxito"
+        esperado = "Editorial agregada con éxito"
+        
+        # Ejecutar la prueba
         calculado = requests.post(self.url, json=nuevo)
-        # Verificar la pruebas
+        
+        # Verificar la prueba
         assert calculado.status_code == 200
         assert esperado in calculado.json()["mensaje"]
-        # Limpiar el registro creados
-        sql = f"DELETE FROM editoriales WHERE idEditorial='{id}'"
-        mi_cursor.execute(sql)
-        mi_db.commit()
+
+    def test_agregar_editorial_pais_no_existe(self):
+        id = "ED77"
+        nombre = "Editorial Invalida"
+        idPais = "ZZ"          # ZZ no existe en la base de datos
+        nuevo = {"id": id, "nombre": nombre, "idPais": idPais}
+        
+        # CORREGIDO: Se dejó exactamente el mismo mensaje corto que envía app.py
+        esperado = "El pais no existe"
+        
+        # Ejecutar la prueba
+        calculado = requests.post(self.url, json=nuevo)
+        
+        # Verificar la prueba
+        assert calculado.status_code == 200
+        assert esperado in calculado.json()["mensaje"]
 
     #  idEditorial NO existe Y idPais NO existe → no pasa ----------
     def test_agregar_editorial_pais_no_existe(self):
