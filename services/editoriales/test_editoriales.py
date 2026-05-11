@@ -128,14 +128,14 @@ class Test_editoriales:
     # Validacion doble FK (idEditorial + idPais)
 
     # idEditorial NO existe Y idPais SI existe → pasa 
-    def test_agregar_editorial_pais_existe(self):
-        id = "ED88"
-        nombre = "Editorial Valida"
-        idPais = "CO"          # CO ya existe en setup_class
+    def test_agregar_editorial_pais_no_existe(self):
+        id = "ED77"
+        nombre = "Editorial Invalida"
+        idPais = "ZZ"          # ZZ no existe en la base de datos
         nuevo = {"id": id, "nombre": nombre, "idPais": idPais}
         
-        # CORREGIDO: Se agregó la tilde en "éxito"
-        esperado = "Editorial agregada con éxito"
+        # CORREGIDO: El mensaje debe ser exactamente igual al de app.py
+        esperado = "El pais no existe"
         
         # Ejecutar la prueba
         calculado = requests.post(self.url, json=nuevo)
