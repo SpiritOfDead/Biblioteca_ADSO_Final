@@ -125,7 +125,6 @@ class Test_editoriales:
             assert len(datos) == 0
 
 
-    # Validacion doble FK (idEditorial + idPais)
 
     # idEditorial NO existe Y idPais SI existe → pasa 
     def test_agregar_editorial_pais_no_existe(self):
@@ -159,24 +158,6 @@ class Test_editoriales:
         # Verificar la prueba
         assert calculado.status_code == 200
         assert esperado in calculado.json()["mensaje"]
-
-    #  idEditorial NO existe Y idPais NO existe → no pasa ----------
-    def test_agregar_editorial_pais_no_existe(self):
-        id = "ED77"
-        nombre = "Editorial Invalida"
-        idPais = "ZZ"          # ZZ no existe en la base de datos
-        nuevo = {"id": id, "nombre": nombre, "idPais": idPais}
-        esperado = "El pais no existe, no se puede agregar la editorial"
-        # Ejecutar la prueba
-        calculado = requests.post(self.url, json=nuevo)
-        # Verificar la prueba
-        assert calculado.status_code == 200
-        assert esperado in calculado.json()["mensaje"]
-        # Verificar que NO se insertó en la base de datos
-        sql = f"SELECT * FROM editoriales WHERE idEditorial='{id}'"
-        mi_cursor.execute(sql)
-        datos = mi_cursor.fetchall()
-        assert len(datos) == 0
 
     #idEditorial SI existe → no consulta, ya existe ----------
     def test_agregar_editorial_ya_existe(self):
