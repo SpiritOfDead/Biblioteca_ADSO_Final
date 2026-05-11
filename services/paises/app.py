@@ -12,10 +12,8 @@ class ListaPaises(Resource):
         return jsonify({"mensaje": "paises", "data": paises})
 
     def post(self):
-        # Agrega un nuevo país si el id no existe
         nuevo = request.json
-        resultado = mis_paises.consultar(nuevo["id"])
-        if len(resultado) == 0:
+        if len(mis_paises.consultar(nuevo["id"])) == 0:
             mis_paises.agregar(nuevo["id"], nuevo["nombre"], nuevo["continente"])
             return jsonify({"mensaje": "País agregado con éxito"})
         else:

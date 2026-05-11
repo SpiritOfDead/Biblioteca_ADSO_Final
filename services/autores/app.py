@@ -5,35 +5,29 @@ programa = Flask(__name__)
 api = Api(programa)
 
 class ListaAutores(Resource):
-
     def get(self):
-        # Retorna todos los autores
         autores = mis_autores.listar()
         return jsonify({"mensaje": "autores", "data": autores})
 
     def post(self):
         nuevo = request.json
-
-        # Condicion 1: si el idAutor ya existe, no pasa
-        resultado_autor = mis_autores.consultar(nuevo["id"])
-        if len(resultado_autor) != 0:
+        id_autor = nuevo["id"]
+        id_pais = nuevo["idPais"]
+        
+        # CONDICIÓN 1: Si el ID del autor YA EXISTE, corta y no busca más.
+        if len(mis_autores.consultar(id_autor)) > 0:
             return jsonify({"mensaje": "Id de autor ya existe"})
-
-        # Condicion 2: el idAutor NO existe, verificar si el idPais existe
-        resultado_pais = mis_autores.consultar_pais(nuevo["idPais"])
-        if len(resultado_pais) == 0:
-            # idAutor no existe Y idPais no existe → no pasa
-            return jsonify({"mensaje": "El pais no existe, no se puede agregar el autor"})
-
-        # idAutor no existe Y idPais si existe → pasa
-        mis_autores.agregar(nuevo["id"], nuevo["nombre"], nuevo["email"], nuevo["idPais"])
-        return jsonify({"mensaje": "Autor agregado con exito"})
-
+            
+        # CONDICIÓN 2: Si el ID del país NO EXISTE, no pasa.
+        if len(mis_autores.consultar_pais(id_pais)) == 0:
+            return jsonify({"mensaje": "El pais no existe"})
+            
+        # CONDICIÓN 3: Si llega aquí, significa que el autor no existe Y el país sí existe. ¡PASA!
+        mis_autores.agregar(id_autor, nuevo["nombre"], nuevo["email"], id_pais)
+        return jsonify({"mensaje": "Autor agregado con éxito"})
 
 class Autor(Resource):
-
     def get(self, id):
-        # Busca un autor por id
         resultado = mis_autores.consultar(id)
         if len(resultado) == 0:
             return jsonify({"mensaje": "Autor no encontrado"})
@@ -41,24 +35,19 @@ class Autor(Resource):
             return jsonify({"mensaje": "Autor encontrado", "autor": resultado[0]})
 
     def put(self, id):
-        # Modifica un autor existente
         nuevo = request.json
-        resultado = mis_autores.consultar(id)
-        if len(resultado) == 0:
+        if len(mis_autores.consultar(id)) == 0:
             return jsonify({"mensaje": "Autor no existe"})
         else:
             mis_autores.modificar(id, nuevo["nombre"], nuevo["email"], nuevo["idPais"])
-            return jsonify({"mensaje": "Autor modificado con exito"})
+            return jsonify({"mensaje": "Autor modificado con éxito"})
 
     def delete(self, id):
-        # Elimina un autor existente
-        resultado = mis_autores.consultar(id)
-        if len(resultado) == 0:
+        if len(mis_autores.consultar(id)) == 0:
             return jsonify({"mensaje": "Autor no existe"})
         else:
             mis_autores.eliminar(id)
-            return jsonify({"mensaje": "Autor eliminado con exito!"})
-
+            return jsonify({"mensaje": "Autor eliminado con éxito!"})
 
 api.add_resource(ListaAutores, "/autores")
 api.add_resource(Autor, "/autores/<id>")
