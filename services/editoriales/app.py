@@ -17,7 +17,7 @@ class ListaEditoriales(Resource):
         # CONDICIÓN 1: Si el ID de la editorial YA EXISTE, no busca nada más y se detiene.
         if len(mis_editoriales.consultar(id_edi)) > 0:
             return jsonify({"mensaje": "Id de editorial ya existe"})
-            
+        
         # CONDICIÓN 2: Si el ID del país NO EXISTE, no pasa.
         if len(mis_editoriales.consultar_pais(id_pais)) == 0:
             return jsonify({"mensaje": "El pais no existe"})

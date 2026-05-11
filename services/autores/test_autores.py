@@ -69,24 +69,23 @@ class Test_autores:
         assert calculado.status_code == 200
         assert esperado_entrada in calculado.json()["mensaje"]
 
-    # ---------- PRUEBAS NUEVAS DE VALIDACIÓN DOBLE ----------
     
     def test_agregar_autor_pais_existe(self):
-        # Prueba 7: id NO existe, Pais SI existe -> Pasa
+        #id NO existe, Pais SI existe -> Pasa
         nuevo = {"id": "AU900", "nombre": "Autor Valido", "email": "valido@test.com", "idPais": "CO"}
         calculado = requests.post(self.url, json=nuevo)
         assert calculado.status_code == 200
         assert calculado.json()["mensaje"] == "Autor agregado con éxito"
 
     def test_agregar_autor_pais_no_existe(self):
-        # Prueba 8: id NO existe, Pais NO existe -> Falla por pais
+        #id NO existe, Pais NO existe  Falla por pais
         nuevo = {"id": "AU901", "nombre": "Autor Invalido", "email": "invalido@test.com", "idPais": "ZZ"}
         calculado = requests.post(self.url, json=nuevo)
         assert calculado.status_code == 200
         assert calculado.json()["mensaje"] == "El pais no existe"
 
     def test_agregar_autor_ya_existe(self):
-        # Prueba 9: id SI existe -> Corta antes de revisar el país
+        #id SI existe  Corta antes de revisar el país
         nuevo = {"id": "AU001", "nombre": "Ya existo", "email": "existo@test.com", "idPais": "CO"}
         calculado = requests.post(self.url, json=nuevo)
         assert calculado.status_code == 200
