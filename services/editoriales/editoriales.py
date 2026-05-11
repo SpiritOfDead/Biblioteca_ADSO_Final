@@ -1,8 +1,4 @@
-"""
-Modelo para la gestión de editoriales.
-Contiene todo lo relacionado con la persistencia (SQL)
-de la tabla editoriales.
-"""
+
 from conexion import *
 
 class Editoriales:
@@ -17,6 +13,13 @@ class Editoriales:
     def consultar(self, id):
         # Busca una editorial por su idEditorial
         sql = f"SELECT * FROM editoriales WHERE idEditorial='{id}'"
+        mi_cursor.execute(sql)
+        resultado = mi_cursor.fetchall()
+        return resultado
+
+    def consultar_pais(self, idPais):
+        # Verifica si el pais existe en la tabla paises
+        sql = f"SELECT * FROM paises WHERE idPais='{idPais}'"
         mi_cursor.execute(sql)
         resultado = mi_cursor.fetchall()
         return resultado

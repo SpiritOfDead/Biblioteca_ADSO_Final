@@ -1,5 +1,5 @@
 """
-Modelo para la gestión de autores.
+Modelo para la gestion de autores.
 Contiene todo lo relacionado con la persistencia (SQL)
 de la tabla autores.
 """
@@ -17,6 +17,13 @@ class Autores:
     def consultar(self, id):
         # Busca un autor por su idAutor
         sql = f"SELECT * FROM autores WHERE idAutor='{id}'"
+        mi_cursor.execute(sql)
+        resultado = mi_cursor.fetchall()
+        return resultado
+
+    def consultar_pais(self, idPais):
+        # Verifica si el pais existe en la tabla paises
+        sql = f"SELECT * FROM paises WHERE idPais='{idPais}'"
         mi_cursor.execute(sql)
         resultado = mi_cursor.fetchall()
         return resultado

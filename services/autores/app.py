@@ -12,14 +12,22 @@ class ListaAutores(Resource):
         return jsonify({"mensaje": "autores", "data": autores})
 
     def post(self):
-        # Agrega un nuevo autor si el id no existe
         nuevo = request.json
-        resultado = mis_autores.consultar(nuevo["id"])
-        if len(resultado) == 0:
-            mis_autores.agregar(nuevo["id"], nuevo["nombre"], nuevo["email"], nuevo["idPais"])
-            return jsonify({"mensaje": "Autor agregado con éxito"})
-        else:
+
+        # Condicion 1: si el idAutor ya existe, no pasa
+        resultado_autor = mis_autores.consultar(nuevo["id"])
+        if len(resultado_autor) != 0:
             return jsonify({"mensaje": "Id de autor ya existe"})
+
+        # Condicion 2: el idAutor NO existe, verificar si el idPais existe
+        resultado_pais = mis_autores.consultar_pais(nuevo["idPais"])
+        if len(resultado_pais) == 0:
+            # idAutor no existe Y idPais no existe → no pasa
+            return jsonify({"mensaje": "El pais no existe, no se puede agregar el autor"})
+
+        # idAutor no existe Y idPais si existe → pasa
+        mis_autores.agregar(nuevo["id"], nuevo["nombre"], nuevo["email"], nuevo["idPais"])
+        return jsonify({"mensaje": "Autor agregado con exito"})
 
 
 class Autor(Resource):
@@ -40,7 +48,7 @@ class Autor(Resource):
             return jsonify({"mensaje": "Autor no existe"})
         else:
             mis_autores.modificar(id, nuevo["nombre"], nuevo["email"], nuevo["idPais"])
-            return jsonify({"mensaje": "Autor modificado con éxito"})
+            return jsonify({"mensaje": "Autor modificado con exito"})
 
     def delete(self, id):
         # Elimina un autor existente
@@ -49,7 +57,7 @@ class Autor(Resource):
             return jsonify({"mensaje": "Autor no existe"})
         else:
             mis_autores.eliminar(id)
-            return jsonify({"mensaje": "Autor eliminado con éxito!"})
+            return jsonify({"mensaje": "Autor eliminado con exito!"})
 
 
 api.add_resource(ListaAutores, "/autores")

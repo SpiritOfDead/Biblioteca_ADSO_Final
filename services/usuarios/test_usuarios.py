@@ -1,7 +1,4 @@
-"""
-Pruebas unitarias para el microservicio de USUARIOS
-Proyecto: Biblioteca - SENA ADSO
-"""
+
 from conexion import *
 import pytest
 import requests

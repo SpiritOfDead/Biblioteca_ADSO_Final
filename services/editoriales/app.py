@@ -12,14 +12,22 @@ class ListaEditoriales(Resource):
         return jsonify({"mensaje": "editoriales", "data": editoriales})
 
     def post(self):
-        # Agrega una nueva editorial si el id no existe
         nuevo = request.json
-        resultado = mis_editoriales.consultar(nuevo["id"])
-        if len(resultado) == 0:
-            mis_editoriales.agregar(nuevo["id"], nuevo["nombre"], nuevo["idPais"])
-            return jsonify({"mensaje": "Editorial agregada con éxito"})
-        else:
+
+        # Condicion 1: si el idEditorial ya existe, no pasa
+        resultado_editorial = mis_editoriales.consultar(nuevo["id"])
+        if len(resultado_editorial) != 0:
             return jsonify({"mensaje": "Id de editorial ya existe"})
+
+        # Condicion 2: el idEditorial NO existe, verificar si el idPais existe
+        resultado_pais = mis_editoriales.consultar_pais(nuevo["idPais"])
+        if len(resultado_pais) == 0:
+            # idEditorial no existe Y idPais no existe → no pasa
+            return jsonify({"mensaje": "El pais no existe, no se puede agregar la editorial"})
+
+        # idEditorial no existe Y idPais si existe → pasa
+        mis_editoriales.agregar(nuevo["id"], nuevo["nombre"], nuevo["idPais"])
+        return jsonify({"mensaje": "Editorial agregada con exito"})
 
 
 class Editorial(Resource):
@@ -40,7 +48,7 @@ class Editorial(Resource):
             return jsonify({"mensaje": "Editorial no existe"})
         else:
             mis_editoriales.modificar(id, nuevo["nombre"], nuevo["idPais"])
-            return jsonify({"mensaje": "Editorial modificada con éxito"})
+            return jsonify({"mensaje": "Editorial modificada con exito"})
 
     def delete(self, id):
         # Elimina una editorial existente
@@ -49,7 +57,7 @@ class Editorial(Resource):
             return jsonify({"mensaje": "Editorial no existe"})
         else:
             mis_editoriales.eliminar(id)
-            return jsonify({"mensaje": "Editorial eliminada con éxito!"})
+            return jsonify({"mensaje": "Editorial eliminada con exito!"})
 
 
 api.add_resource(ListaEditoriales, "/editoriales")

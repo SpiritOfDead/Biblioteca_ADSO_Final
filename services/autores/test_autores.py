@@ -1,28 +1,33 @@
 """
 Pruebas unitarias para el microservicio de AUTORES
 Proyecto: Biblioteca - SENA ADSO
+Sintaxis básica de aprendiz
 """
 from conexion import *
 import pytest
-import requests
 
 class Test_autores:
 
     def setup_class(self):
         # ---- Preparación del entorno de pruebas ----
+        # Se crea un autor de prueba en la base de datos
         self.url = "http://localhost:5081/autores"
-        
+
         # Primero se asegura que el país CO exista (autores depende de paises)
         sql_pais = "INSERT IGNORE INTO paises (idPais, nombre, continente) VALUES ('CO', 'Colombia', 'America')"
         mi_cursor.execute(sql_pais)
         mi_db.commit()
-        
-        # Se inserta el autor de prueba con IGNORE
-        sql = "INSERT IGNORE INTO autores (idAutor, nombre, email, idPais) VALUES ('AU001', 'Autor de Prueba', 'prueba@test.com', 'CO')"
+
+        # Se inserta el autor de prueba
+        sql = "INSERT INTO autores (idAutor, nombre, email, idPais) VALUES ('AU001', 'Autor de Prueba', 'prueba@test.com', 'CO')"
         mi_cursor.execute(sql)
         mi_db.commit()
 
-    # NOTA: Se eliminó teardown_class para evitar errores de llaves foráneas al finalizar las pruebas.
+    def teardown_class(self):
+        # ---- Limpieza de la base de datos ----
+        sql = "DELETE FROM autores WHERE idAutor='AU001'"
+        mi_cursor.execute(sql)
+        mi_db.commit()
 
     # ---------- PRUEBA 1: Listar todos los autores ----------
     def test_lista_autores(self):
@@ -120,3 +125,56 @@ class Test_autores:
             mi_cursor.execute(sql)
             datos = mi_cursor.fetchall()
             assert len(datos) == 0
+
+
+    # =====================================================================
+    # PRUEBAS NUEVAS: Validacion doble FK (idAutor + idPais)
+    # =====================================================================
+
+    # ---------- PRUEBA 7: idAutor NO existe Y idPais SI existe → pasa ----------
+    def test_agregar_autor_pais_existe(self):
+        id = "AU888"
+        nombre = "Autor Valido"
+        email = "valido@test.com"
+        idPais = "CO"          # CO ya existe en setup_class
+        nuevo = {"id": id, "nombre": nombre, "email": email, "idPais": idPais}
+        esperado = "Autor agregado con exito"
+        # Ejecutar la prueba
+        calculado = requests.post(self.url, json=nuevo)
+        # Verificar la prueba
+        assert calculado.status_code == 200
+        assert esperado in calculado.json()["mensaje"]
+        # Limpiar el registro creado
+        sql = f"DELETE FROM autores WHERE idAutor='{id}'"
+        mi_cursor.execute(sql)
+        mi_db.commit()
+
+    # ---------- PRUEBA 8: idAutor NO existe Y idPais NO existe → no pasa ----------
+    def test_agregar_autor_pais_no_existe(self):
+        id = "AU777"
+        nombre = "Autor Invalido"
+        email = "invalido@test.com"
+        idPais = "ZZ"          # ZZ no existe en la base de datos
+        nuevo = {"id": id, "nombre": nombre, "email": email, "idPais": idPais}
+        esperado = "El pais no existe, no se puede agregar el autor"
+        # Ejecutar la prueba
+        calculado = requests.post(self.url, json=nuevo)
+        # Verificar la prueba
+        assert calculado.status_code == 200
+        assert esperado in calculado.json()["mensaje"]
+        # Verificar que NO se insertó en la base de datos
+        sql = f"SELECT * FROM autores WHERE idAutor='{id}'"
+        mi_cursor.execute(sql)
+        datos = mi_cursor.fetchall()
+        assert len(datos) == 0
+
+    # idAutor SI existe → no consulta, ya existe ----------
+    def test_agregar_autor_ya_existe(self):
+        id = "AU001"           # Ya existe desde setup_class
+        nuevo = {"id": id, "nombre": "Cualquier nombre", "email": "x@x.com", "idPais": "CO"}
+        esperado = "Id de autor ya existe"
+        # Ejecutar la prueba (no debe consultar el pais porque el id ya existe)
+        calculado = requests.post(self.url, json=nuevo)
+        # Verificar la prueba
+        assert calculado.status_code == 200
+        assert esperado in calculado.json()["mensaje"]
